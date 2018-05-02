@@ -49,15 +49,32 @@ PlayState.create = function () {
 };
 
 PlayState._loadLevel = function (data) {
+    //create all the groups/layers that we need
+    this.platforms = this.game.add.group();
+
     //spawns platforms
     data.platforms.forEach(this._spawnPlatform, this);
 
     //spawn hero and enemies
     this._spawnCharacters({hero: data.hero});
+
+    //enable gravity
+    const GRAVITY = 1200;
+    this.game.physics.arcade.gravity.y = GRAVITY;
 };
 
 PlayState._spawnPlatform = function (platform) {
-    this.game.add.sprite(platform.x, platform.y, platform.image);
+    let sprite = this.platforms.create(
+        platform.x, platform.y, platform.image);
+    
+    this.game.physics.enable(sprite);
+    //this.game.add.sprite(platform.x, platform.y, platform.image);
+
+    //disable gravity on platforms
+    sprite.body.allowGravity = false;
+
+    //prevents player sprite from pushing platforms off sreen.
+    sprite.body.immovable = true;
 };
 
 PlayState._spawnCharacters = function (data) {
@@ -67,8 +84,15 @@ PlayState._spawnCharacters = function (data) {
 }
 
 PlayState.update = function (){
+    //function for handling collosion
+    this._handleCollisions();
+    //function for handling input
     this._handleInput();
 };
+
+PlayState._handleCollisions = function() {
+    this.game.physics.arcade.collide(this.hero, this.platforms);
+}
 
 PlayState._handleInput = function () {
     if (this.keys.left.isDown) {//move hero left
